@@ -1,0 +1,86 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      pages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Setup Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: '3.9.6'
+
+      - name: Build with Maven (skip tests)
+        run: mvn clean install -Dmaven.test.skip=true
+      
+      - name: Generate Javadoc HTML
+        run: mvn javadoc:javadoc -Dmaven.test.skip=true
+      
+      - name: Configure Maven for GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+            http://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <servers>
+              <server>
+                <id>github</id>
+                <username>\${{ github.actor }}</username>
+                <password>\${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+      
+      - name: Publish to GitHub Packages
+        run: |
+          mvn deploy -Dmaven.test.skip=true \
+            -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Prepare Javadoc for GitHub Pages
+        run: |
+          mkdir -p docs/javadoc
+          # Copy all javadoc directories to a single location
+          find . -path "*/target/site/apidocs" -type d | while read javadoc_dir; do
+            module=$(echo "$javadoc_dir" | sed 's|.*/\([^/]*\)/target/site/apidocs|\1|')
+            if [ -d "$javadoc_dir" ]; then
+              cp -r "$javadoc_dir" "docs/javadoc/$module"
+            fi
+          done
+          # Also check for target/apidocs (alternative location)
+          find . -path "*/target/apidocs" -type d | while read javadoc_dir; do
+            module=$(echo "$javadoc_dir" | sed 's|.*/\([^/]*\)/target/apidocs|\1|')
+            if [ -d "$javadoc_dir" ]; then
+              cp -r "$javadoc_dir" "docs/javadoc/$module"
+            fi
+          done
+      
+      - name: Deploy Javadoc to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/javadoc
+          force_orphan: true
+
