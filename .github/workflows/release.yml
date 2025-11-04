@@ -44,8 +44,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-          server-id: github
-          settings-path: ${{ github.workspace }}
 
       - name: Setup Maven
         uses: stCarolas/setup-maven@v5
@@ -83,6 +81,26 @@ jobs:
             mvn clean install -Dmaven.test.skip=true $JAVADOC_OPTS
           fi
 
+      - name: Configure Maven settings manually
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+            http://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${{ github.repository_owner }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish to GitHub Packages
         run: |
           if [ "${{ inputs.generate_javadoc }}" == "true" ]; then
@@ -91,11 +109,9 @@ jobs:
             JAVADOC_OPTS="-Dmaven.javadoc.skip=true"
           fi
           if command -v mvn17 &> /dev/null; then
-            mvn17 deploy -Dmaven.test.skip=true $JAVADOC_OPTS \
-              -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+            mvn17 deploy -Dmaven.test.skip=true $JAVADOC_OPTS
           else
-            mvn deploy -Dmaven.test.skip=true $JAVADOC_OPTS \
-              -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+            mvn deploy -Dmaven.test.skip=true $JAVADOC_OPTS
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
