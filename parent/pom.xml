@@ -108,4 +108,11 @@
        </snapshots>
     </repository>
   </repositories>
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub martinhickson Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/martinhickson/security-xacml</url>
+    </repository>
+  </distributionManagement>
 </project>

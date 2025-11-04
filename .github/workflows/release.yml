@@ -45,6 +45,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
           server-id: github
+          server-username: ${{ github.repository_owner }}
           settings-path: ${{ github.workspace }}
 
       - name: Setup Maven
@@ -91,11 +92,9 @@ jobs:
             JAVADOC_OPTS="-Dmaven.javadoc.skip=true"
           fi
           if command -v mvn17 &> /dev/null; then
-            mvn17 deploy -Dmaven.test.skip=true $JAVADOC_OPTS \
-              -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+            mvn17 deploy -Dmaven.test.skip=true $JAVADOC_OPTS
           else
-            mvn deploy -Dmaven.test.skip=true $JAVADOC_OPTS \
-              -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+            mvn deploy -Dmaven.test.skip=true $JAVADOC_OPTS
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

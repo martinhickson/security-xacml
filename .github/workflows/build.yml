@@ -23,6 +23,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
           server-id: github
+          server-username: ${{ github.repository_owner }}
           settings-path: ${{ github.workspace }}
 
       - name: Setup Maven
@@ -39,7 +40,7 @@ jobs:
           mvn javadoc:javadoc -Dmaven.test.skip=true
       
       - name: Publish to GitHub Packages
-        run: mvn deploy -Dmaven.test.skip=true -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+        run: mvn deploy -Dmaven.test.skip=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
