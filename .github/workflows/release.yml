@@ -18,6 +18,11 @@ on:
         required: false
         default: '2.1.8.jakarta.bravura.1'
         type: string
+      generate_javadoc:
+        description: 'Generate javadoc JARs'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   release:
@@ -58,16 +63,21 @@ jobs:
       - name: Set Maven version
         run: |
           VERSION="${{ inputs.version }}"
-          mvn versions:set -DnewVersion="$VERSION" -DgenerateBackupPoms=false
+          mvn versions:set -DnewVersion="$VERSION" -DgenerateBackupPoms=false -DprocessAllModules=true
           mvn versions:commit
 
       - name: Build with mvn17 (skip tests)
         run: |
           # Use mvn17 if available, otherwise use mvn with Java 17
-          if command -v mvn17 &> /dev/null; then
-            mvn17 clean package -Dmaven.test.skip=true
+          if [ "${{ inputs.generate_javadoc }}" == "true" ]; then
+            JAVADOC_OPTS=""
           else
-            mvn clean package -Dmaven.test.skip=true
+            JAVADOC_OPTS="-Dmaven.javadoc.skip=true"
+          fi
+          if command -v mvn17 &> /dev/null; then
+            mvn17 clean package -Dmaven.test.skip=true $JAVADOC_OPTS
+          else
+            mvn clean package -Dmaven.test.skip=true $JAVADOC_OPTS
           fi
 
       - name: Commit version changes

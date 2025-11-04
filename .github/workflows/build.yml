@@ -32,7 +32,9 @@ jobs:
         run: mvn clean install -Dmaven.test.skip=true
       
       - name: Generate Javadoc HTML
-        run: mvn javadoc:javadoc -Dmaven.test.skip=true
+        run: |
+          JAVA_HOME=${JAVA_HOME}
+          mvn javadoc:javadoc -Dmaven.test.skip=true
       
       - name: Configure Maven for GitHub Packages
         run: |
