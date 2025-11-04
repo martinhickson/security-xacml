@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.security.Principal;
 import java.security.acl.Group;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import junit.framework.TestCase;
 

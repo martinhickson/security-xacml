@@ -14,6 +14,10 @@
   <description>
     The JBoss XACML Project
   </description>
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+  </properties>
    <scm>
       <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/security/security-xacml/trunk</connection>
       <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/security/security-xacml/trunk</developerConnection>
@@ -25,6 +29,33 @@
           <configuration>
             <tagBase>https://svn.jboss.org/repos/jbossas/projects/security/security-xacml/tags</tagBase>
           </configuration>
+        </plugin>
+       <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <source>17</source>
+            <target>17</target>
+          </configuration>
+        </plugin>
+       <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>enforce-java-version</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <requireJavaVersion>
+                    <version>[17,18)</version>
+                  </requireJavaVersion>
+                </rules>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
     </plugins>
   </build>
@@ -40,6 +71,17 @@
        <releases>
           <enabled>false</enabled>
        </releases>
+    </repository>
+    <repository>
+       <id>wso2.releases</id>
+       <name>WSO2 Releases Repository</name>
+       <url>https://dist.wso2.org/maven2/</url>
+       <releases>
+          <enabled>true</enabled>
+       </releases>
+       <snapshots>
+          <enabled>false</enabled>
+       </snapshots>
     </repository>
   </repositories>
 </project>

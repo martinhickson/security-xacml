@@ -29,8 +29,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXB;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jboss.security.xacml.core.model.context.ObjectFactory;

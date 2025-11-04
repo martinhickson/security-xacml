@@ -22,4 +22,24 @@
     <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/security/security-xacml/trunk</connection>
     <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/security/security-xacml/trunk</developerConnection>
    </scm>
+     <build>
+  <plugins>
+          <plugin>
+          <groupId>com.github.ekryd.sortpom</groupId>
+          <artifactId>sortpom-maven-plugin</artifactId>
+          <version>3.4.0</version>
+          <configuration>
+  <createBackupFile>false</createBackupFile>
+</configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>sort</goal>
+              </goals>
+              <phase>validate</phase>
+            </execution>
+          </executions>
+        </plugin>
+        </plugins>
+        </build>
 </project>

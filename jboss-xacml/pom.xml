@@ -1,16 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jboss.security</groupId>
     <artifactId>jboss-xacml-project</artifactId>
     <version>2.0.8.Final</version>
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <artifactId>jboss-xacml</artifactId>
   <packaging>jar</packaging>
   <name>JBoss XACML</name>
+  <description>JBoss XACML Library</description>
   <url>http://www.jboss.org</url>
-  <description>JBoss XACML Library</description> 
   <dependencies>
     <dependency>
       <groupId>org.jboss.security</groupId>
@@ -18,7 +19,7 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>apache-xerces</groupId>
+      <groupId>org.apache.xerces</groupId>
       <artifactId>xml-apis</artifactId>
       <version>2.9.1</version>
     </dependency>
@@ -29,34 +30,54 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>sun-jaf</groupId>
-      <artifactId>activation</artifactId>
-      <version>1.1</version>
+      <groupId>jakarta.activation</groupId>
+      <artifactId>jakarta.activation-api</artifactId>
+      <version>2.1.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>hsqldb</groupId>
+      <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
-      <version>1.8.0.2</version>
+      <version>2.7.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.0.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>sun-opends</groupId>
-      <artifactId>OpenDS</artifactId>
-      <version>1.0.0</version>
-      <scope>test</scope>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>4.0.0</version>
     </dependency>
     <dependency>
-      <groupId>sleepycat</groupId>
+      <groupId>com.sleepycat</groupId>
       <artifactId>je</artifactId>
-      <version>3.2.43</version>
+      <version>18.3.12</version>
       <scope>test</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+          <createBackupFile>false</createBackupFile>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>sort</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

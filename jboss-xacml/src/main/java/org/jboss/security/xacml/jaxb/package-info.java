@@ -5,6 +5,6 @@
 // Generated on: 2007.07.06 at 03:19:27 PM CDT 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:jboss:xacml:2.0", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "urn:jboss:xacml:2.0", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.jboss.security.xacml.jaxb;
 

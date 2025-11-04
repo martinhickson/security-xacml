@@ -27,8 +27,8 @@ import java.security.acl.Group;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.JAXBElement;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.bind.JAXBElement;
 
 import junit.framework.TestCase;
 

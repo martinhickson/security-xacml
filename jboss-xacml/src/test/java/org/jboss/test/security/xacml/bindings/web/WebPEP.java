@@ -26,7 +26,7 @@ import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Enumeration;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.jboss.security.xacml.core.model.context.ActionType;
 import org.jboss.security.xacml.core.model.context.AttributeType;

@@ -26,8 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXB;
+import jakarta.xml.bind.JAXBElement;
 
 import org.jboss.security.xacml.bridge.JBossPolicyFinder;
 import org.jboss.security.xacml.core.JBossXACMLPolicy; 
