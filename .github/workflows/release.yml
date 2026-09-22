@@ -201,7 +201,7 @@ jobs:
             echo "Tag ${TAG_NAME} already exists"
           else
             git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
-            git push origin "$TAG_NAME"
+            git push origin "refs/tags/${TAG_NAME}"
           fi
 
       - name: Create GitHub Release
