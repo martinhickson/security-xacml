@@ -12,8 +12,9 @@ cd "${WORKDIR}"
 
 curl -fsSL -o upstream.jar "${BASE}/jbossxacml-${VERSION}.jar"
 curl -fsSL -o upstream-sources.jar "${BASE}/jbossxacml-${VERSION}-sources.jar"
-mkdir -p src/main/java
-unzip -q -o upstream-sources.jar -d src/main/java
+mkdir -p javadoc
+printf '%s\n' "JBoss XACML ${VERSION}. API documentation is in the sources jar." > javadoc/README.txt
+jar cf upstream-javadoc.jar -C javadoc .
 
 cat > pom.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -77,6 +78,32 @@ cat > pom.xml << EOF
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>attach-upstream-extras</id>
+            <phase>package</phase>
+            <goals><goal>attach-artifact</goal></goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>\${project.basedir}/upstream-sources.jar</file>
+                  <type>jar</type>
+                  <classifier>sources</classifier>
+                </artifact>
+                <artifact>
+                  <file>\${project.basedir}/upstream-javadoc.jar</file>
+                  <type>jar</type>
+                  <classifier>javadoc</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
         <version>0.7.0</version>
@@ -86,34 +113,6 @@ cat > pom.xml << EOF
           <autoPublish>true</autoPublish>
           <waitUntil>published</waitUntil>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.3.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals><goal>jar-no-fork</goal></goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.11.2</version>
-        <configuration>
-          <doclint>none</doclint>
-          <failOnError>false</failOnError>
-          <failOnWarnings>false</failOnWarnings>
-          <source>8</source>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals><goal>jar</goal></goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
