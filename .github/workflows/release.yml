@@ -176,6 +176,7 @@ jobs:
               shutil.copy2(pom, dest)
           PY
           .github/scripts/rewrite-group-id.sh org.jboss.security "${CENTRAL_GROUP_ID}"
+          export MAVEN_OPTS="-Xmx1g"
           mvn -B -ntp deploy -Pcentral-release -Dmaven.test.skip=true \
             -Dmaven.javadoc.failOnError=false \
             -Dgpg.passphrase="${MAVEN_CENTRAL_GPG_PASSPHRASE}"
