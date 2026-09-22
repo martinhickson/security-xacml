@@ -10,6 +10,10 @@ BASE="https://repository.jboss.org/nexus/repository/public/org/jboss/security/jb
 WORKDIR="$(mktemp -d)"
 cd "${WORKDIR}"
 
+if curl -fsS -o /dev/null -w '%{http_code}' "https://repo1.maven.org/maven2/io/github/martinhickson/jbossxacml/${VERSION}/jbossxacml-${VERSION}.pom" | grep -q 200; then
+  echo "Already on Maven Central: ${GROUP_ID}:jbossxacml:${VERSION}"
+  exit 0
+fi
 curl -fsSL -o upstream.jar "${BASE}/jbossxacml-${VERSION}.jar"
 curl -fsSL -o upstream-sources.jar "${BASE}/jbossxacml-${VERSION}-sources.jar"
 mkdir -p javadoc
@@ -106,7 +110,7 @@ cat > pom.xml << EOF
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
-        <version>0.7.0</version>
+        <version>0.11.0</version>
         <extensions>true</extensions>
         <configuration>
           <publishingServerId>central</publishingServerId>
