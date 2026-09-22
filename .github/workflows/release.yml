@@ -6,27 +6,38 @@ on:
       branch_name:
         description: 'Branch name to create'
         required: false
-        default: '2.1.8.jakarta.bravura.1'
+        default: '2.1.8.jakarta.bravura.11'
         type: string
       version:
-        description: 'Version to set (e.g., 2.1.8.jakarta.bravura.1)'
+        description: 'Version to set (e.g., 2.1.8.jakarta.bravura.11)'
         required: false
-        default: '2.1.8.jakarta.bravura.1'
+        default: '2.1.8.jakarta.bravura.11'
         type: string
       tag_name:
         description: 'Tag name for release'
         required: false
-        default: '2.1.8.jakarta.bravura.1'
+        default: '2.1.8.jakarta.bravura.11'
         type: string
       generate_javadoc:
         description: 'Generate javadoc JARs'
         required: false
         default: false
         type: boolean
+      deploy_to_maven_central:
+        description: 'Publish to Maven Central (io.github.martinhickson)'
+        required: false
+        default: true
+        type: boolean
+      central_group_id:
+        description: 'Maven groupId for Maven Central (verified namespace)'
+        required: false
+        default: 'io.github.martinhickson'
+        type: string
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     permissions:
       contents: write
       packages: write
@@ -108,13 +119,73 @@ jobs:
           else
             JAVADOC_OPTS="-Dmaven.javadoc.skip=true"
           fi
+          set +e
           if command -v mvn17 &> /dev/null; then
-            mvn17 deploy -Dmaven.test.skip=true $JAVADOC_OPTS
+            mvn17 deploy -Dmaven.test.skip=true $JAVADOC_OPTS | tee /tmp/gh-deploy.log
           else
-            mvn deploy -Dmaven.test.skip=true $JAVADOC_OPTS
+            mvn deploy -Dmaven.test.skip=true $JAVADOC_OPTS | tee /tmp/gh-deploy.log
+          fi
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -ne 0 ]; then
+            if grep -q 'status code: 409' /tmp/gh-deploy.log; then
+              echo "Already on GitHub Packages"
+            else
+              exit "$code"
+            fi
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to Maven Central
+        if: inputs.deploy_to_maven_central == true || inputs.deploy_to_maven_central == 'true'
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_CENTRAL_GPG_PRIVATE_KEY: ${{ secrets.MAVEN_CENTRAL_GPG_PRIVATE_KEY }}
+          MAVEN_CENTRAL_GPG_PASSPHRASE: ${{ secrets.MAVEN_CENTRAL_GPG_PASSPHRASE }}
+          CENTRAL_GROUP_ID: ${{ inputs.central_group_id }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MAVEN_CENTRAL_USERNAME}" ] || [ -z "${MAVEN_CENTRAL_PASSWORD}" ] || [ -z "${MAVEN_CENTRAL_GPG_PRIVATE_KEY}" ]; then
+            echo "::error::Maven Central publishing is not configured."
+            exit 1
+          fi
+          mkdir -p ~/.m2
+          if ! grep -q '<id>central</id>' ~/.m2/settings.xml; then
+            sed -i "/<\/servers>/i\\
+              <server>\\
+                <id>central</id>\\
+                <username>${MAVEN_CENTRAL_USERNAME}</username>\\
+                <password>${MAVEN_CENTRAL_PASSWORD}</password>\\
+              </server>" ~/.m2/settings.xml
+          fi
+          echo "${MAVEN_CENTRAL_GPG_PRIVATE_KEY}" | gpg --batch --import --pinentry-mode loopback
+          chmod +x .github/scripts/publish-legacy-jbossxacml.sh .github/scripts/rewrite-group-id.sh
+          .github/scripts/publish-legacy-jbossxacml.sh "${CENTRAL_GROUP_ID}"
+          python3 - << 'PY'
+          import pathlib, shutil
+          backup = pathlib.Path('/tmp/pom-backup')
+          if backup.exists():
+              shutil.rmtree(backup)
+          for pom in pathlib.Path('.').rglob('pom.xml'):
+              if '.git' in pom.parts or 'target' in pom.parts:
+                  continue
+              dest = backup / pom
+              dest.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(pom, dest)
+          PY
+          .github/scripts/rewrite-group-id.sh org.jboss.security "${CENTRAL_GROUP_ID}"
+          mvn -B -ntp deploy -Pcentral-release -Dmaven.test.skip=true \
+            -Dmaven.javadoc.failOnError=false \
+            -Dgpg.passphrase="${MAVEN_CENTRAL_GPG_PASSPHRASE}"
+          python3 - << 'PY'
+          import pathlib, shutil
+          backup = pathlib.Path('/tmp/pom-backup')
+          for src in backup.rglob('pom.xml'):
+              shutil.copy2(src, src.relative_to(backup))
+          print('restored poms')
+          PY
 
       - name: Commit version changes
         run: |
@@ -125,8 +196,12 @@ jobs:
       - name: Create and push tag
         run: |
           TAG_NAME="${{ inputs.tag_name }}"
-          git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
-          git push origin "$TAG_NAME"
+          if git ls-remote --tags origin "refs/tags/${TAG_NAME}" | grep -q "${TAG_NAME}"; then
+            echo "Tag ${TAG_NAME} already exists"
+          else
+            git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+            git push origin "$TAG_NAME"
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
